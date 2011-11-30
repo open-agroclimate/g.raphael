@@ -65,7 +65,7 @@
             valuesy = [valuesy];
         }
 
-        var gutter = opts.gutter || 10,
+        var gutter = (opts.gutter == null) ? 10 : opts.gutter,
             len = Math.max(valuesx[0].length, valuesy[0].length),
             symbol = opts.symbol || "",
             colors = opts.colors || chartinst.colors,

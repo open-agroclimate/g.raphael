@@ -149,6 +149,7 @@
             covers = paper.set(),
             covers2 = paper.set(),
             total = Math.max.apply(Math, values),
+            minTotal = Math.min.apply(Math, values),
             stacktotal = [],
             multi = 0,
             colors = opts.colors || chartinst.colors,
@@ -156,12 +157,14 @@
 
         if (Raphael.is(values[0], "array")) {
             total = [];
+            minTotal = [];
             multi = len;
             len = 0;
 
             for (var i = values.length; i--;) {
                 bars.push(paper.set());
                 total.push(Math.max.apply(Math, values[i]));
+                minTotal.push(Math.min.apply(Math, values[i]));
                 len = Math.max(len, values[i].length);
             }
 
@@ -186,10 +189,10 @@
             }
 
             total = Math.max.apply(Math, opts.stacked ? stacktotal : total);
+            minTotal = Math.min.apply(Math, opts.stacked ? stacktotal : minTotal);
         }
-        
+        total = (Math.abs(minTotal) > total ? Math.abs(minTotal) : total);
         total = (opts.to) || total;
-
         var barwidth = width / (len * (100 + gutter) + gutter) * 100,
             barhgutter = barwidth * gutter / 100,
             barvgutter = opts.vgutter == null ? 20 : opts.vgutter,
@@ -208,9 +211,11 @@
             stack = [];
 
             for (var j = 0; j < (multi || 1); j++) {
-                var h = Math.round((multi ? values[j][i] : values[i]) * Y),
+                var v = (multi ? values[j][i] : values[i]),
+                    h = Math.round(Math.abs(v) * Y),
                     top = y + height - barvgutter - h,
                     bar = finger(Math.round(X + barwidth / 2), top + h, barwidth, h, true, type, null, paper).attr({ stroke: "none", fill: colors[multi ? j : i] });
+                    if( v < 0 ) bar.rotate(180,X + barwidth/2,top+h);
 
                 if (multi) {
                     bars[j].push(bar);
@@ -438,7 +443,7 @@
 
             total = Math.max.apply(Math, opts.stacked ? stacktotal : total);
         }
-        
+
         total = (opts.to) || total;
 
         var barheight = Math.floor(height / (len * (100 + gutter) + gutter) * 100),

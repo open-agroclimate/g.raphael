@@ -789,10 +789,11 @@ Raphael.g = {
         return { from: f, to: t, power: i };
     },
 
-    axis: function (x, y, length, from, to, steps, orientation, labels, type, dashsize, paper) {
+    axis: function (x, y, length, from, to, steps, orientation, labels, type, dashsize, lrotate, paper) {
         dashsize = dashsize == null ? 2 : dashsize;
         type = type || "t";
         steps = steps || 10;
+        lrotate = lrotate || 0;
         paper = arguments[arguments.length-1] //paper is always last argument
 
         var path = type == "|" || type == " " ? ["M", x + .5, y, "l", 0, .001] : orientation == 1 || orientation == 3 ? ["M", x + .5, y, "l", 0, -length] : ["M", x, y + .5, "l", length, 0],
@@ -801,11 +802,12 @@ Raphael.g = {
             t = ends.to,
             i = ends.power,
             j = 0,
-            txtattr = { font: "11px 'Fontin Sans', Fontin-Sans, sans-serif" },
+            txtattr = { font: "11px 'Fontin Sans', Fontin-Sans, sans-serif"},
             text = paper.set(),
             d;
 
         d = (t - f) / steps;
+        lrotate = lrotate === paper ? 0 : lrotate;
 
         var label = f,
             rnd = i > 0 ? i : 0;
@@ -838,11 +840,13 @@ Raphael.g = {
 
             while (X <= x + length) {
                 type != "-" && type != " " && (path = path.concat(["M", X + .5, y - (type == "+" ? dashsize : !!orientation * dashsize * 2), "l", 0, dashsize * 2 + 1]));
-                text.push(txt = paper.text(X, y + addon, (labels && labels[j++]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr));
+                txt = paper.text(X, y + addon, (labels && labels[j++]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr);
+                if(lrotate !== 0) { txt.rotate(lrotate); }
+                text.push(txt);
 
                 var bb = txt.getBBox();
 
-                if (prev >= bb.x - 5) {
+                if((Math.abs(lrotate%180) < 15) && (prev >= bb.x - 5)) {
                     text.pop(text.length - 1).remove();
                 } else {
                     prev = bb.x + bb.width;
@@ -854,7 +858,9 @@ Raphael.g = {
 
             if (Math.round(X - dx - x - length)) {
                 type != "-" && type != " " && (path = path.concat(["M", x + length + .5, y - (type == "+" ? dashsize : !!orientation * dashsize * 2), "l", 0, dashsize * 2 + 1]));
-                text.push(paper.text(x + length, y + addon, (labels && labels[j]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr));
+                txt = paper.text(x + length, y + addon, (labels && labels[j]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr);
+                if( lrotate !== 0) txt.rotate(lrotate);
+                text.push(txt);
             }
         }
 
