@@ -16,7 +16,7 @@
             series = paper.set(),
             order = [],
             len = values.length,
-            angle = 0,
+            angle = opts.angle || 0,
             total = 0,
             others = 0,
             cut = 9,
@@ -44,7 +44,7 @@
         chart.covers = covers;
 
         if (len == 1) {
-            series.push(paper.circle(cx, cy, r).attr({ fill: chartinst.colors[0], stroke: opts.stroke || "#fff", "stroke-width": opts.strokewidth == null ? 1 : opts.strokewidth }));
+            series.push(paper.circle(cx, cy, r).attr({ fill: opts.colors && opts.colors[0] || chartinst.colors[0] || "#666" , stroke: opts.stroke || "#fff", "stroke-width": opts.strokewidth == null ? 1 : opts.strokewidth }));
             covers.push(paper.circle(cx, cy, r).attr(chartinst.shim));
             total = values[0];
             values[0] = { value: values[0], order: 0, valueOf: function () { return this.value; } };
@@ -56,24 +56,26 @@
                 values[i] = { value: values[i], order: i, valueOf: function () { return this.value; } };
             }
 
-            values.sort(function (a, b) {
+            if(opts.sort || opts.sort == undefined) {
+              values.sort(function (a, b) {
                 return b.value - a.value;
-            });
-
-            for (i = 0; i < len; i++) {
-                if (defcut && values[i] * 360 / total <= 1.5) {
-                    cut = i;
-                    defcut = false;
-                }
-
-                if (i > cut) {
-                    defcut = false;
-                    values[cut].value += values[i];
-                    values[cut].others = true;
-                    others = values[cut].value;
-                }
+              });
             }
+            if(!opts.ignoreZeros || opts.ignoreZeros == undefined) {
+              for (i = 0; i < len; i++) {
+                  if (defcut && values[i] * 360 / total <= 1.5) {
+                      cut = i;
+                      defcut = false;
+                  }
 
+                  if (i > cut) {
+                      defcut = false;
+                      values[cut].value += values[i];
+                      values[cut].others = true;
+                      others = values[cut].value;
+                  }
+              }
+            }
             len = Math.min(cut + 1, values.length);
             others && values.splice(len) && (values[cut].others = true);
 
